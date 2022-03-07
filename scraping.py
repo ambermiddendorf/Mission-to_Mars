@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as soup
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import datetime as dt
+import time
 
 def scrape_all():
     # Initiate headless driver for deployment
@@ -12,6 +13,7 @@ def scrape_all():
     browser = Browser('chrome', **executable_path, headless=True)
 
     news_title, news_paragraph = mars_news(browser)
+    hemispheres = full_images(browser)
 
     # Run all scraping functions and store results in dictionary
     data = {
@@ -19,6 +21,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres": hemispheres,
         "last_modified": dt.datetime.now()
     }
 
@@ -46,12 +49,12 @@ def mars_news(browser):
         news_title = slide_elem.find('div', class_='content_title').get_text()
 
         # Use the parent element to find the paragraph text
-        news_p = slide_elem.find('div', class_='article_teaser_body').get_text()
+        news_paragraph = slide_elem.find('div', class_='article_teaser_body').get_text()
     
     except AttributeError:
         return None, None
 
-    return news_title, news_p
+    return news_title, news_paragraph
 
 # ### Featured Images
 
@@ -93,6 +96,30 @@ def mars_facts():
     
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+def full_images(browser):
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+# 2. Create a list to hold the images and titles.
+    hemispheres=[]
+
+# 3. Write code to retrieve the image urls and titles for each hemisphere.
+    for n in range(4):
+        image_link = browser.find_by_tag('h3')[n]
+        image_link.click()
+        time.sleep(2)
+        html = browser.html
+        img_soup = soup(html, "html.parser")
+        d_img = img_soup.find(class_='container')
+        full_img=d_img.find_all('li')[0]
+        full_img_url=full_img.find(href=True).get('href')
+        title = img_soup.find(class_='title').getText()
+        hemispheres.append({'title': title, 'img_url':url+full_img_url})
+        browser.back()   
+
+# 4. Print the list that holds the dictionary of each image url and title.   
+    return hemispheres
 
 if __name__ == "__main__":
     # If running as script, print scraped data
