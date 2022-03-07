@@ -75,40 +75,26 @@ df.to_html()
 
 # 1. Use browser to visit the URL 
 url = 'https://marshemispheres.com/'
-
 browser.visit(url)
-html=browser.html
-soup=soup(html, "html.parser")
 
 # 2. Create a list to hold the images and titles.
-hemisphere_image_urls = []
+image_dict=[]
 
 # 3. Write code to retrieve the image urls and titles for each hemisphere.
-hemisphere_image_urls = soup.find_all(class_='item')
-
-# 4. Print the list that holds the dictionary of each image url and title.
-image_dict=[]
-hemis=[]
-for i in hemisphere_image_urls:
-    title = i.find('h3').text
-    link = "https://marshemispheres.com/"+ i.find(class_='itemLink product-item').get('href')
-    hemis.append({'title': title, 'link': link})
-
-for i in hemis:
-#    m_img_url = get_img_url(link)
-    url="https://marshemispheres.com/"
-    browser.visit(link)
+for n in range(4):
+    image_link = browser.find_by_tag('h3')[n]
+    image_link.click()
     time.sleep(2)
-    i_html=browser.html
-    i_soup=soup(i_html, "html.parser")
-    wide_image=i_soup.find(class_='wide-image')
-    m_img_url = wide_image.get('src')
-#    browser.back()
-    image_dict.append({'title': title, 'img_url':url+m_img_url})
+    html = browser.html
+    img_soup = soup(html, "html.parser")
+    d_img = img_soup.find(class_='container')
+    full_img=d_img.find_all('li')[0]
+    full_img_url=full_img.find(href=True).get('href')
+    title = img_soup.find(class_='title').getText()
+    image_dict.append({'title': title, 'img_url':url+full_img_url})
+    browser.back()   
 
-hemis
-
-
+# 4. Print the list that holds the dictionary of each image url and title.   
 image_dict
 
 # 5. Quit the browser
